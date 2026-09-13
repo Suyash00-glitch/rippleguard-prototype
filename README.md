@@ -28,38 +28,38 @@ Traditional Software Composition Analysis (SCA) tools suffer from severe false-p
 
 ```mermaid
 flowchart TD
-    Dev([Developer]) -->|1. Push Branch & Open PR| PR[GitHub Pull Request]
-    PR -->|2. Trigger Workflow| GHA[GitHub Actions]
-    GHA -->|3. Send Manifest / Lockfile| RG[RippleGuard Engine]
+    Dev(["Developer"]) -->|"1. Push Branch & Open PR"| PR["GitHub Pull Request"]
+    PR -->|"2. Trigger Workflow"| GHA["GitHub Actions CI/CD"]
+    GHA -->|"3. Send Manifest / Lockfile"| DP
 
-    subgraph RippleGuard ["RippleGuard Core Engine"]
-        DP[Dependency Parsers\n(npm, PyPI, Maven, Go)] -->|Extract Packages & Edges| DAG[Topological Dependency Graph\nG = (V, E)]
-        DAG -->|Calculate In/Out Degree, Depth, Paths| GM[Graph Metrics & Blast Radius Engine]
+    subgraph CoreEngine ["RippleGuard Core Engine"]
+        DP["Dependency Parsers<br/>(npm, PyPI, Maven, Go)"] -->|"Extract Packages & Edges"| DAG["Topological Dependency Graph<br/>G = (V, E)"]
+        DAG -->|"Compute Degrees, Depth, Paths"| GM["Graph Metrics & Blast Radius Engine"]
         
-        OSV[(OSV.dev API)] -->|Query Active CVEs/GHSAs| VE[Vulnerability Normalizer]
-        EPSS[(FIRST.org EPSS API)] -->|Exploit Probability Score| EE[EPSS Enrichment]
+        OSV[("OSV.dev API")] -->|"Query Active CVEs / GHSAs"| VE["Vulnerability Normalizer"]
+        EPSS[("FIRST.org EPSS API")] -->|"Exploit Probability Score"| EE["EPSS Enrichment"]
         
-        GM --> RE[Contextual Risk Engine]
+        GM --> RE["Contextual Risk Engine<br/>(6-Factor Weighted Score)"]
         VE --> RE
         EE --> RE
         
-        RE -->|Upstream Attenuation| PE[Propagation Engine]
-        PE --> RS[Remediation Simulator\nWhat If We Patch It?]
-        RS --> PRIO[Prioritization Engine]
+        RE -->|"Upstream Attenuation"| PE["Propagation Engine"]
+        PE --> RS["Remediation Simulator<br/>('What If We Patch It?')"]
+        RS --> PRIO["Prioritization Engine"]
     end
 
-    RE -->|4. Risk >= Threshold?| DEC{Merge Decision}
-    DEC -->|Risk >= 70| BLOCKED[❌ BLOCKED\nExit 1 / Status Check Failed]
-    DEC -->|Risk < 70| PASSED[✅ PASSED\nExit 0 / Status Check Succeeded]
+    RE -->|"4. Check Policy Gate"| DEC{"Risk >= Threshold?"}
+    DEC -->|"Yes (Risk >= 70)"| BLOCKED["❌ BLOCKED<br/>Status Check Failed"]
+    DEC -->|"No (Risk < 70)"| PASSED["✅ PASSED<br/>Status Check Succeeded"]
 
-    BLOCKED -->|5. Post Rich PR Comment| GHComment[GitHub PR Discussion]
-    PASSED -->|5. Post Rich PR Comment| GHComment
+    BLOCKED -->|"5. Post Rich PR Comment"| GHComment["GitHub PR Discussion & Checks"]
+    PASSED -->|"5. Post Rich PR Comment"| GHComment
     
-    BLOCKED -->|6. Enforce Branch Protection| BP[Branch Protection:\nMerge Blocked]
-    PASSED -->|6. Unblock PR| BPMerge[Branch Protection:\nMerge Allowed]
+    BLOCKED -->|"6. Enforce Protection"| BP["Branch Protection:<br/>Merge Blocked"]
+    PASSED -->|"6. Allow Merge"| BPMerge["Branch Protection:<br/>Merge Allowed"]
 
-    RippleGuard <-->|Store Analyses & Historical Trends| DB[(SQLite / PostgreSQL via Prisma)]
-    RippleGuard <-->|Interactive Dashboard & Graph Visualizer| UI[React + React Flow Dashboard]
+    RE <-->|"Store & Query Data"| DB[("SQLite Database<br/>(via Prisma ORM)")]
+    RE <-->|"Interactive Visualization"| UI["React + React Flow<br/>Dashboard"]
 ```
 
 ---
@@ -158,7 +158,11 @@ export interface RiskModel {
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/rippleguard.git
-cd mit-prototype
+cd rippleguard-prototype
+
+# Configure environment files
+cp .env.example .env
+cp .env.example backend/.env
 
 # Install backend dependencies & initialize database
 cd backend
