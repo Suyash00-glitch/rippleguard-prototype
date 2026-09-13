@@ -157,7 +157,7 @@ export interface RiskModel {
 ### 1. Clone & Install
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/rippleguard.git
+git clone https://github.com/Suyash00-glitch/rippleguard-prototype.git
 cd rippleguard-prototype
 
 # Configure environment files
