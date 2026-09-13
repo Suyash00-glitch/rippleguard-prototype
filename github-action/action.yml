@@ -1,0 +1,46 @@
+name: 'RippleGuard PR Security Gate'
+description: 'Contextual supply-chain risk analyzer, blast radius engine, and PR merge gate'
+author: 'RippleGuard'
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  rippleguard-url:
+    description: 'URL of the RippleGuard API service'
+    required: false
+    default: 'http://localhost:4000'
+  file-path:
+    description: 'Path to dependency lockfile or manifest (package-lock.json, requirements.txt, pom.xml, go.mod)'
+    required: false
+    default: 'package-lock.json'
+  threshold:
+    description: 'Risk score threshold (0-100) above which merge is blocked'
+    required: false
+    default: '70'
+  github-token:
+    description: 'GitHub token for PR comment updates'
+    required: false
+    default: ${{ github.token }}
+  is-demo:
+    description: 'Run in deterministic demo mode'
+    required: false
+    default: 'false'
+
+outputs:
+  can-merge:
+    description: 'Boolean flag indicating if merge is allowed'
+    value: ${{ steps.check.outputs.can_merge }}
+  risk-score:
+    description: 'Calculated project risk score (0-100)'
+    value: ${{ steps.check.outputs.risk_score }}
+  risk-level:
+    description: 'Calculated risk category (LOW, MEDIUM, HIGH, VERY_HIGH, CRITICAL)'
+    value: ${{ steps.check.outputs.risk_level }}
+  gate-status:
+    description: 'Gate decision: PASSED or BLOCKED'
+    value: ${{ steps.check.outputs.gate_status }}
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

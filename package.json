@@ -1,0 +1,23 @@
+{
+  "name": "rippleguard-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RippleGuard — GitHub PR Security Gate & Contextual Supply-Chain Risk Engine",
+  "scripts": {
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "test": "npm test --prefix backend"
+  },
+  "keywords": [
+    "security-gate",
+    "supply-chain-security",
+    "vulnerabilities",
+    "osv",
+    "epss",
+    "blast-radius",
+    "github-action"
+  ],
+  "author": "RippleGuard Team",
+  "license": "Apache-2.0"
+}

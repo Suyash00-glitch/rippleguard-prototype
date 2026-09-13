@@ -1,0 +1,11 @@
+{
+  "name": "sample-vulnerable-app",
+  "version": "1.0.0",
+  "description": "Demo application with canonical dependency graph for RippleGuard testing",
+  "main": "index.js",
+  "dependencies": {
+    "auth-service-pkg-a": "1.0.0",
+    "billing-service-pkg-b": "1.2.0",
+    "logger-util-pkg-d": "2.0.1"
+  }
+}

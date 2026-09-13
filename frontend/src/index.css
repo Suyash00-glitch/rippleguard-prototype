@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #FAF7EE;
+    color: #0F172A;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Subtle clean scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #FAF7EE;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D9D2C2;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #BFB7A3;
+  }
+}
+
+/* Clean, crisp cards */
+.clean-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+.clean-card-hover {
+  transition: all 0.15s ease-in-out;
+}
+.clean-card-hover:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* React Flow styling for Clean Light Theme */
+.react-flow__background {
+  background-color: #FAF7EE !important;
+}
+
+.react-flow__edge-path {
+  stroke: #94A3B8 !important;
+  stroke-width: 2 !important;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #2563EB !important;
+  stroke-width: 3 !important;
+}
+
+.react-flow__handle {
+  background: #64748B !important;
+  border: 2px solid #FFFFFF !important;
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.react-flow__controls {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+
+.react-flow__controls-button {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  fill: #64748B !important;
+}
+
+.react-flow__controls-button:hover {
+  background: #F1F5F9 !important;
+  fill: #0F172A !important;
+}

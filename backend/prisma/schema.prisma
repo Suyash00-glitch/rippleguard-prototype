@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String     @id @default(uuid())
+  name        String
+  repoUrl     String?
+  ecosystem   String     // npm, pypi, maven, golang
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  analyses    Analysis[]
+}
+
+model Analysis {
+  id                   String                  @id @default(uuid())
+  projectId            String
+  project              Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status               String                  // PENDING, COMPLETED, FAILED
+  branch               String?
+  commitSha            String?
+  prNumber             Int?
+  riskScore            Float                   @default(0.0)
+  riskLevel            String                  @default("LOW") // LOW, MEDIUM, HIGH, VERY_HIGH, CRITICAL
+  gateStatus           String                  @default("PASSED") // PASSED, BLOCKED
+  gateThreshold        Float                   @default(70.0)
+  totalDependencies    Int                     @default(0)
+  directDependencies   Int                     @default(0)
+  transitiveDependencies Int                   @default(0)
+  vulnerableCount      Int                     @default(0)
+  criticalCount        Int                     @default(0)
+  highCount            Int                     @default(0)
+  mediumCount          Int                     @default(0)
+  lowCount             Int                     @default(0)
+  maxBlastRadius       Float                   @default(0.0)
+  isDemo               Boolean                 @default(false)
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  packages             Package[]
+  relationships        DependencyRelationship[]
+  vulnerabilities      Vulnerability[]
+  graphMetrics         GraphMetric[]
+  riskDetails          RiskScore[]
+  remediations         RemediationSimulation[]
+}
+
+model Package {
+  id              String      @id @default(uuid())
+  analysisId      String
+  analysis        Analysis    @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  name            String
+  version         String
+  ecosystem       String
+  isDirect        Boolean     @default(true)
+  depth           Int         @default(0)
+  packageRisk     Float       @default(0.0)
+  propagatedRisk  Float       @default(0.0)
+  createdAt       DateTime    @default(now())
+
+  vulnerabilities Vulnerability[]
+  graphMetric     GraphMetric?
+
+  @@unique([analysisId, name, version])
+}
+
+model DependencyRelationship {
+  id         String   @id @default(uuid())
+  analysisId String
+  analysis   Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  sourceName String   // Parent package (A in A -> B)
+  targetName String   // Dependent package (B in A -> B)
+  createdAt  DateTime @default(now())
+
+  @@index([analysisId])
+}
+
+model Vulnerability {
+  id               String    @id @default(uuid())
+  analysisId       String
+  analysis         Analysis  @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  packageId        String?
+  package          Package?  @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  packageName      String
+  installedVersion String
+  vulnId           String    // OSV or GHSA ID
+  cveId            String?   // CVE-XXXX if available
+  title            String?
+  summary          String?
+  details          String?
+  severity         Float     // CVSS base score 0-10
+  severityRating   String    // CRITICAL, HIGH, MEDIUM, LOW
+  affectedVersions String?
+  fixedVersion     String?
+  references       String?   // JSON array of URLs
+  publishedDate    DateTime?
+  modifiedDate     DateTime?
+  epssScore        Float?    // 0.0 - 1.0
+  epssPercentile   Float?    // 0.0 - 1.0
+  finalRiskScore   Float     @default(0.0)
+  createdAt        DateTime  @default(now())
+
+  epssData         EPSSData?
+
+  @@index([analysisId])
+}
+
+model EPSSData {
+  id              String        @id @default(uuid())
+  vulnerabilityId String        @unique
+  vulnerability   Vulnerability @relation(fields: [vulnerabilityId], references: [id], onDelete: Cascade)
+  cve             String
+  epss            Float         // e.g. 0.87
+  percentile      Float?        // e.g. 0.94
+  date            String?
+  createdAt       DateTime      @default(now())
+}
+
+model GraphMetric {
+  id                   String   @id @default(uuid())
+  analysisId           String
+  analysis             Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  packageId            String   @unique
+  package              Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageName          String
+  depth                Int      @default(0)
+  inDegree             Int      @default(0) // packages depending on this package
+  outDegree            Int      @default(0) // packages this package depends on
+  directDependents     Int      @default(0)
+  transitiveDependents Int      @default(0)
+  downstreamPathsCount Int      @default(0)
+  blastRadiusScore     Float    @default(0.0) // 0-100
+  centralityScore      Float    @default(0.0)
+  reachabilityCount    Int      @default(0)
+  createdAt            DateTime @default(now())
+
+  @@index([analysisId])
+}
+
+model RiskScore {
+  id                   String   @id @default(uuid())
+  analysisId           String
+  analysis             Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  overallScore         Float
+  riskLevel            String
+  severityContrib      Float
+  epssContrib          Float
+  dependencyContrib    Float
+  blastRadiusContrib   Float
+  propagationContrib   Float
+  fixFactorContrib     Float
+  createdAt            DateTime @default(now())
+
+  @@index([analysisId])
+}
+
+model RemediationSimulation {
+  id                  String   @id @default(uuid())
+  analysisId          String
+  analysis            Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  packageName         String
+  currentVersion      String
+  recommendedVersion  String
+  currentRiskScore    Float
+  simulatedRiskScore  Float
+  riskReductionPoints Float
+  riskReductionPercent Float
+  rationale           String   // JSON string of bullet reasons
+  prRecommendation    String   // SAFE TO MERGE or STILL BLOCKED
+  createdAt           DateTime @default(now())
+
+  @@index([analysisId])
+}

@@ -1,0 +1,6 @@
+# Example Python dependencies
+requests==2.25.1
+flask==1.1.2
+jinja2==2.11.2
+urllib3==1.26.4
+numpy==1.21.0

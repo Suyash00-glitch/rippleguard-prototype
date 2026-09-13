@@ -1,0 +1,42 @@
+name: RippleGuard Security Gate
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/requirements.txt'
+      - '**/pyproject.toml'
+      - '**/pom.xml'
+      - '**/go.mod'
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+  supply-chain-security-gate:
+    name: RippleGuard Contextual Risk Evaluation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run RippleGuard PR Gate Check
+        uses: ./github-action
+        with:
+          rippleguard-url: ${{ secrets.RIPPLEGUARD_API_URL || 'https://api.rippleguard.internal' }}
+          file-path: 'package-lock.json'
+          threshold: '70'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          is-demo: 'false'
